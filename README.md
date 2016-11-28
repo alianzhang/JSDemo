@@ -1,2 +1,2 @@
 # JSDemo
-JS案例
+[JS开心消消乐案例](https://github.com/alianzhang/JSDemo/index.html)

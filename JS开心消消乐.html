@@ -1,0 +1,273 @@
+<!DOCTYPE html>
+<html>
+<head lang="en">
+    <meta charset="UTF-8">
+    <title></title>
+    <style>
+        p{
+            padding: 0;
+            margin: 0;
+        }
+        .layout{
+            width: 800px;
+            height: 600px;
+            border: 1px solid black;
+            margin: 0px auto;
+            position: relative;
+            background-color: white;
+        }
+
+        .ball{
+            width: 25px;
+            height: 25px;
+            border-radius: 50%;
+            background-color: red;
+            /* 径向渐变 */
+            background-image: radial-gradient(at 5px 5px,rgba(0,0,0,0),rgba(0,0,0,0.5));
+            position: absolute;
+            left: 100px;
+            top: 400px;
+        }
+
+        .paddle{
+            width: 100px;
+            height: 15px;
+            background-color: red;
+            position: absolute;
+            left: 0px;
+            bottom: 0px;
+        }
+        .text{
+            width: 800px;
+            height: 30px;
+            line-height: 30px;
+            border: 1px solid black;
+            margin: 50px auto 0px;
+            background-color: white;
+        }
+        .score{
+            float: left;
+            margin-left: 20px;
+        }
+        .lives{
+            float: right;
+            margin-right: 20px;
+        }
+    </style>
+</head>
+<body>
+    <div class="text">
+        <p class="score">当前累计得分：<text id="num1">0</text></p>
+        <p class="lives">剩余生命次数：<text id="num2">5</text></p>
+    </div>
+    <div class="layout">
+        <p class="ball"></p>
+        <p class="paddle"></p>
+    </div>
+</body>
+
+<script>
+    /*
+    * 4*10 个盒子   总宽度：800   盒子高:50;    *
+    *
+    * 小球动起来，碰撞检测
+    * */
+
+//  动态生成盒子和每个盒字的宽度
+    var  ws=[[],[],[],[]];
+    var  boxs=[[],[],[],[]];
+//  列数
+    var col=8;
+//  行数
+    var row=4;
+//  高度
+    var H=50;
+//  分数
+    var score = 0;
+//  生命数
+    var lives = 5;
+   function getRandom(){
+      return parseInt(Math.random() * 255);
+   }
+
+//  定义box对象的方法
+    function box(row,col,w,x,y){
+        this.row=row;
+        this.col=col;
+        this.height=H;
+        this.width=w;
+        this.x=x;
+        this.y=y;
+        this.show=true;
+        this.bgc="rgb("+getRandom()+","+getRandom()+","+getRandom()+")";
+
+//      定义碰撞检测方法
+        this.impactTest=function(aimX,aimY){
+            if(this.show){
+                //检测碰撞，当小球落在了某个box宽高范围内，即发生碰撞
+                if(aimX>=this.x&&aimX<=this.x+this.width&&aimY>=this.y&&aimY<=this.y+this.height){
+                    return true;
+                }else{
+                    return false;
+                }
+            }
+        }
+//      定义绘制box的方法，this指向调用它的每一个box对象
+        this.draw=function(){
+                var section= document.createElement('div');
+                section.style.width=this.width+'px';
+                section.style.height=this.height+'px';
+                section.style.backgroundColor=this.bgc;
+                section.style.position="absolute";
+                section.style.left=this.x+'px';
+                section.style.top=this.y+'px';
+                section.style.webkitBoxSizing="border-box";
+                section.style.border="1px solid white";
+                document.querySelector('.layout').appendChild(section);
+        }
+    }
+
+//  随机生成每行的前4列盒子宽度，每个盒子的最小宽度为H
+    for(var i=0;i<row;i++){
+        for(var j=0;j<col/2;j++){
+            ws[i][j]=H+parseInt(Math.random()*100);
+        }
+    }
+//  生成每行匹配的后4列盒子的宽度,让第一列盒子的宽+第五列盒子的宽等于200
+//  以此类推，二对六，三对七，四对八，总共四组乘以200就正好等于layout的总宽度800
+    for(var i=0;i<row;i++){
+        for(var j=col/2;j<col;j++){
+            ws[i][j]=200-ws[i][j-col/2];
+        }
+    }
+    // console.log(ws);
+
+    var sumWdith=0;
+    var sumHeigth=0;
+//  生成盒子对象数组，数组中的每一项都为一个box对象
+    for(var i=0;i<row;i++){
+        for(var j=0;j<col;j++){
+//          累加宽
+            sumWdith+=ws[i][j];
+            sumHeigth=i*50;
+            //实例化box对象box(row,col,w,x,y),指定每个盒子的x、y坐标
+            var temp=new box(i,j,ws[i][j],sumWdith-ws[i][j],sumHeigth)
+            boxs[i][j]=temp;
+        }
+        sumWdith=0;//每行遍历完成后，总宽度归为0
+    }
+// console.log(boxs);
+
+//  遍历boxs数组，调用drow方法绘制盒子
+    for(var i=0;i<row;i++){
+        for(var j=0;j<col;j++) {
+            boxs[i][j].draw();
+        }
+     }
+
+//   小球位移
+    var layout=document.querySelector('.layout');
+    var ball=document.querySelector('.ball');
+    var paddle=document.querySelector('.paddle');
+    var num1=document.querySelector('#num1');
+    var num2=document.querySelector('#num2');
+    var x=ball.offsetLeft;
+    var y=ball.offsetTop;
+    var stepx=-5;
+    var stepy=-5;
+
+    // 添加键盘控制滑块移动事件
+    // document.addEventListener("keydown", key);
+    // function key(e){
+    //     // console.log("谁动了我的键盘");
+    //     var px=paddle.offsetLeft;
+    //     var pstepx=40;
+    //     if(e.keyCode == 37) {
+    //         px=px-pstepx;
+    //         if(px>0){
+    //            paddle.style.left=px+'px';
+    //         }else{
+    //            paddle.style.left=0+'px';
+    //         }
+    //     }
+    //     if(e.keyCode==39) {
+    //         px=px+pstepx;
+    //         if(px<700){
+    //            paddle.style.left=px+'px';
+    //         }else{
+    //            paddle.style.left=700+'px';
+    //         }  
+    //     }
+    // }   
+    //  添加鼠标控制滑块移动事件
+    document.addEventListener("mousemove", mouse);
+    function mouse(e) {
+        var px=paddle.offsetLeft;
+        var relativeX = e.clientX - layout.offsetLeft;
+        if(relativeX > -5 && relativeX < 710) {
+            px = relativeX;
+            if(px>0){
+               paddle.style.left=px+'px';
+            }else{
+                paddle.style.left=0+'px';
+            }
+            if(px<700){
+               paddle.style.left=px+'px';
+            }else{
+               paddle.style.left=700+'px';
+            }
+            // 当小球触碰到滑板，则要改变运动方向
+            if (x>=px&&x<=px+100 && y>(600-15-25)) {
+               stepy=-5;
+               console.log("碰到滑板了");
+            }
+               
+        }
+    }
+    setInterval(function(){
+        x=x+stepx;
+        y=y+stepy;
+        //边界检测
+        if(x<=0){
+            stepx=5;
+        }
+        if(x>=800-25){
+            stepx=-6;
+        }
+        if(y<=0){
+            stepy=5;
+        }
+        if(y>=600-25){
+           stepy=-7;
+            // 小球落一次地生命次数减少一次，当减少到0，则游戏结束，页面重新加载
+            if(lives === 0) {
+                num2.innerHTML=lives;
+                alert("GAME OVER");
+                document.location.reload();
+            }
+            lives--;
+            num2.innerHTML=lives;
+        }
+
+        for(var i=0;i<row;i++){
+            for(var j=0;j<col;j++){
+                if(boxs[i][j].impactTest(x,y)){
+                    stepy=3;
+                    boxs[i][j].show=false;
+                    document.querySelectorAll('.layout div')[(i)*8+j].style.display='none';
+                    if(score == row*col) {
+                            alert("YOU WIN, CONGRATS!");
+                            document.location.reload();
+                        }
+                    score++;
+                    num1.innerHTML=score;
+                }
+            }
+        }
+        ball.style.left=x+'px';
+        ball.style.top=y+'px';
+    },15);
+
+    
+</script>
+</html>

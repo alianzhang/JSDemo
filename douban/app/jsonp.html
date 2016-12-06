@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <title>jsonp</title>
+</head>
+
+<body>
+  <script>
+    function jsonp(url, callback) {
+      var callbackName = 'itcast_' + Math.random().toString().substr(2) + (+new Date())
+      window[callbackName] = function (data) {
+          callback(data)
+          document.body.removeChild(script)
+        }
+        // 1. 创建 script 标签
+      var script = document.createElement('script')
+        // 2. 设置 src
+      script.src = url += '?callback=' + callbackName
+        // 3. 追加到 DOM 中
+      document.body.appendChild(script)
+    }
+
+    jsonp('https://api.douban.com/v2/movie/in_theaters', function (data) {
+      console.log(111)
+    })
+
+    jsonp('https://api.douban.com/v2/movie/in_theaters', function (data) {
+      console.log(222)
+    })
+
+    jsonp('https://api.douban.com/v2/movie/in_theaters', function (data) {
+      console.log(333)
+    })
+  </script>
+</body>
+
+</html>

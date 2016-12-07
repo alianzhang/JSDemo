@@ -1,0 +1,58 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <title>some、every、forEach</title>
+</head>
+
+<body>
+  <ul>
+    <li>🍎</li>
+    <li>🍌</li>
+    <li>♣</li>
+  </ul>
+  <script>
+    // var lis = document.getElementsByTagName('li')
+    // for (var i = 0; i < lis.length; i++) {
+    //   lis[i].onclick = function () {
+    //     window.alert(i)
+    //   }
+    // }
+
+    // 将一个伪数组转换为一个数组
+    // Array.from(lis).forEach(function (li, index) {
+    //   li.onclick = function () {
+    //     window.alert(index)
+    //   }
+    // })
+
+    var arr = [2, 4, 6, 1, 20, 6]
+
+    // if (arr.some(function (num, index) {
+    //     console.log(num)
+    //     if (num % 6 === 0) {
+    //       return true
+    //     }
+    //   })) {
+    //   console.log('some 找到匹配项了')
+    // } else {
+    //   console.log('false')
+    // }
+
+    console.log(arr.every(function (num, index) {
+      return num % 2 === 0
+    }))
+
+    // arr.forEach(function (num, index) {
+    //   if (num % 6 === 0) {
+    //     // return 只会阻止当前执行函数的解析往后执行
+    //     // break 直接报错
+    //     return
+    //   }
+    //   console.log(111)
+    // })
+  </script>
+</body>
+
+</html>
